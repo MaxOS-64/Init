@@ -13,8 +13,7 @@
 #include <libcommon/mem.h>
 #include <libcommon/string.h>
 #include <libfs/server/fileserver_client.h>
-#include <libfs/directory.h>
-#include <libfs/file.h>
+#include <libfs/init.h>
 #include <libfs/path.h>
 
 using namespace MaxOS::KPI::processes;
@@ -23,22 +22,6 @@ using namespace MaxOS::KPI;
 using namespace MaxOS;
 using namespace MaxOS::common;
 using namespace LibFS;
-
-static void wait_for_disks_mounted() {
-
-    const char* root = "/1/";
-    uint64_t dir = 0;
-    for (size_t tries = 0; tries < 20000 && !dir; tries++) {
-        dir = open_directory(root);
-        if (!dir)
-            yield();
-    }
-
-    if (!dir) {
-        klog("FileServer never mounted disks\n");
-        while (true);
-    }
-}
 
 static bool start_serivce(const entry_information_t* entry, const char* name) {
 
@@ -76,10 +59,10 @@ extern "C" void _start(int argc, char* argv[]) {
     klog("DriverManager launched\n");
 
     // Wait for fileserver to be ready
-    wait_for_disks_mounted();
+    wait_for_full_fs();
+    uint64_t services_dir = open_directory("/0/os/servers/");
 
     // Get services
-    uint64_t services_dir = open_directory("/0/os/servers/");
     size_t services_size = directory_entries_size(services_dir);
     auto entries = new uint8_t[services_size];
 
