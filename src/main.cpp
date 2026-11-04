@@ -29,7 +29,7 @@ static bool start_serivce(const entry_information_t* entry, const char* name) {
     if (!entry->is_file)
         return true;
 
-    string service_path = "/0/os/servers/"s + string(name);
+    string service_path = "/0/os/servers/"_s+ string(name);
     exec_file(Path::file_name(service_path).c_str(), service_path.c_str());
 
     return true;
